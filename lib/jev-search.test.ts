@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { rankBookProbabilities } from "@/lib/jev-search";
 
 describe("rankBookProbabilities", () => {
+  it("discards malformed probabilities", () => {
+    expect(rankBookProbabilities({ a: -1, b: 2, c: NaN, d: Infinity, valid: .5 })).toEqual([{ id: "valid", probability: .5 }]);
+  });
   it("returns the five highest-probability books in order", () => {
     const ranked = rankBookProbabilities({
       a: 0.08,

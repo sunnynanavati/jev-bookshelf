@@ -30,6 +30,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   const [shelfBlur, setShelfBlur] = useState(0);
   const [hoveredBook, setHoveredBook] = useState<string | null>(null);
   const [focusedBook, setFocusedBook] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState("");
   const reducedMotion = Boolean(useReducedMotion());
   const timers = useRef<number[]>([]);
   const searchSequence = useRef(0);
@@ -68,6 +69,8 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   };
 
   const runSearch = async (value: string) => {
+    if (state === "searching") return;
+    setSearchError("");
     clearTimers();
     const searchId = ++searchSequence.current;
     setHoveredBook(null);
@@ -84,7 +87,16 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
         body: JSON.stringify({ query: value.trim() }),
       });
 
-      if (!response.ok) throw new Error(`Search failed with ${response.status}`);
+      if (!response.ok) {
+        if (searchId !== searchSequence.current) return;
+        if (response.status === 429) {
+          const seconds = Number(response.headers.get("Retry-After")) || 60;
+          setSearchError(`Too many searches. Try again in ${seconds} seconds.`);
+        } else {
+          setSearchError("Search is temporarily unavailable. Please try again later.");
+        }
+        throw new Error(`Search failed with ${response.status}`);
+      }
       const payload = await response.json() as SearchResponse;
       const books = payload.results.map(({ book }) => book);
 
@@ -138,6 +150,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
     setHoveredBook(null);
     setFocusedBook(null);
     setState("idle");
+    setSearchError("");
   };
 
   const hasResults = results.length > 0;
@@ -216,6 +229,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
               placeholder="Ask your bookshelf"
               autoComplete="off"
               spellCheck="false"
+              maxLength={500}
             />
             <button
               type={showClear ? "button" : "submit"}
@@ -242,6 +256,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
 
           <div className="status" role="status" aria-live="polite">
             {state === "unsupported" && "No matching books. Try another search."}
+            {state === "error" && searchError}
           </div>
 
         </div>
