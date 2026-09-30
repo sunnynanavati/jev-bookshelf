@@ -27,7 +27,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   const [results, setResults] = useState<Book[]>([]);
   const [resultLayout, setResultLayout] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const [shelfBlur, setShelfBlur] = useState(2.25);
+  const [shelfBlur, setShelfBlur] = useState(0);
   const [hoveredBook, setHoveredBook] = useState<string | null>(null);
   const [focusedBook, setFocusedBook] = useState<string | null>(null);
   const reducedMotion = Boolean(useReducedMotion());

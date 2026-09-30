@@ -7,7 +7,7 @@
   --muted: #73777b;
   --hairline: rgba(38, 41, 45, 0.22);
   --marquee-duration: 86s;
-  --shelf-blur: 2.25px;
+  --shelf-blur: 0px;
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 

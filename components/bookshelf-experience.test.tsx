@@ -34,11 +34,11 @@ describe("BookshelfExperience", () => {
 
   it("never exposes development controls or saved blur overrides in production", () => {
     vi.stubEnv("NODE_ENV", "production");
-    window.localStorage.setItem("jev-shelf-blur", "0");
+    window.localStorage.setItem("jev-shelf-blur", "6");
     const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
     fireEvent.keyDown(window, { key: "B", ctrlKey: true, shiftKey: true });
     expect(screen.queryByLabelText("Shelf blur strength")).not.toBeInTheDocument();
-    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("2.25px");
+    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("0px");
   });
 
   it("starts the search-icon motion with the first character and stops when editing ends", async () => {
@@ -55,6 +55,24 @@ describe("BookshelfExperience", () => {
     await user.type(input, "h");
     fireEvent.blur(input);
     expect(icon).not.toHaveClass("is-scanning");
+  });
+
+  it("uses zero idle blur in production, blurs results, and restores zero on clear", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ mode: "demo", results: [resultFor("nineteen-eighty-four")] }),
+    }));
+    const user = userEvent.setup();
+    const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
+    const blur = () => container.querySelector("main")?.style.getPropertyValue("--shelf-blur");
+    expect(blur()).toBe("0px");
+    await user.type(screen.getByLabelText("Ask your bookshelf"), "Dystopian surveillance");
+    await user.click(screen.getByRole("button", { name: "Search books" }));
+    await screen.findByRole("heading", { name: "Nineteen Eighty-Four" });
+    expect(blur()).toBe("2.25px");
+    await user.click(screen.getByRole("button", { name: "Clear search and results" }));
+    expect(blur()).toBe("0px");
   });
 
   it("shows an empty-result message without suggested searches", async () => {
