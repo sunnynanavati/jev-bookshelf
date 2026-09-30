@@ -11,14 +11,14 @@ Security headers disable framing, MIME sniffing and unused camera/microphone/loc
 1. Create or connect an **Upstash Redis** database through Vercel's Storage/Marketplace, or directly in Upstash. Choose a suitable region and review its pricing. No account/database is created by the code.
 2. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` from that database to the Vercel project's server environment. Use a read/write token (the limiter runs an atomic Lua script). Never use a `NEXT_PUBLIC_` prefix or paste secrets into GitHub/issues/chat.
 3. Configure Production and any Preview environment that has a TypeSafe key. Preview and production counters are separated by `VERCEL_ENV`. Projects sharing one database and environment share budgets; use a separate database for unrelated apps.
-4. Redeploy after setting the variables. Test a staging/preview deployment, including a burst of 11 valid searches: the first 10 may proceed, the 11th should return 429 with `Retry-After`, without calling Jev. This is a paid verification if a real key is enabled. Confirm counter keys/expiry in Redis and no credentials in logs.
+4. Redeploy after setting the variables. Test a staging/preview deployment, including a burst of 21 valid searches: the first 20 may proceed, the 21st should return 429 with `Retry-After`, without calling Jev. This is a paid verification if a real key is enabled. Confirm counter keys/expiry in Redis and no credentials in logs.
 
 Defaults (in `lib/rate-limit.ts`):
 
 | Budget | Limit | Window |
 | --- | --- | --- |
-| Per IP | 10 searches | 60 seconds |
-| Per IP | 60 searches | 3,600 seconds |
+| Per IP | 20 searches | 60 seconds |
+| Per IP | 200 searches | 86,400 seconds |
 | All paid searches | 500 admitted searches | 86,400 seconds |
 
 Windows begin on first admitted use, not at midnight. An atomic Redis script checks all budgets before consuming them, preventing parallel server instances from each granting a fresh allowance. Rejected requests do not consume other budgets. Provider failures still consume an allowance; SDK transient retries can mean multiple upstream attempts per admitted search, so this is **not a dollar spending cap**.

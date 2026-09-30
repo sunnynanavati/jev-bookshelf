@@ -55,8 +55,8 @@ export async function checkSearchRateLimit(request: Request, paid: boolean): Pro
   const identity = createHmac("sha256", token || "local-development-only").update(ip || "local").digest("hex");
   const prefix = `jev:search:${process.env.VERCEL_ENV || "local"}`;
   const rules: Rule[] = [
-    { key: `${prefix}:${identity}:minute`, limit: 10, seconds: 60 },
-    { key: `${prefix}:${identity}:hour`, limit: 60, seconds: 3600 },
+    { key: `${prefix}:${identity}:minute`, limit: 20, seconds: 60 },
+    { key: `${prefix}:${identity}:daily`, limit: 200, seconds: 86400 },
   ];
   if (paid) rules.push({ key: `${prefix}:daily`, limit: 500, seconds: 86400 });
   if (!url || !token) return localLimiter(rules);
