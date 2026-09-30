@@ -355,10 +355,8 @@ button {
 }
 
 @keyframes search-icon-scan {
-  0%, 100% { transform: rotate(0deg) translateX(2px) rotate(0deg); }
-  25% { transform: rotate(90deg) translateX(2px) rotate(-98deg); }
-  50% { transform: rotate(180deg) translateX(2px) rotate(-180deg); }
-  75% { transform: rotate(270deg) translateX(2px) rotate(-262deg); }
+  from { transform: rotate(0deg) translateX(2px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(2px) rotate(-360deg); }
 }
 
 .search-form input {
