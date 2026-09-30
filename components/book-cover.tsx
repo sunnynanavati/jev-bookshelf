@@ -11,6 +11,8 @@ type BookCoverProps = {
   index: number;
   reducedMotion: boolean;
   offsetX?: number;
+  hoverEnabled?: boolean;
+  hoverGeneration?: number;
   onHoverChange?: (active: boolean) => void;
   onFocusChange?: (active: boolean) => void;
 };
@@ -80,11 +82,12 @@ const reducedMetadataVariants: Variants = {
   },
 };
 
-export function BookCover({ book, index, reducedMotion, offsetX = 0, onHoverChange, onFocusChange }: BookCoverProps) {
+export function BookCover({ book, index, reducedMotion, offsetX = 0, hoverEnabled = true, hoverGeneration = 0, onHoverChange, onFocusChange }: BookCoverProps) {
   const [coverLoaded, setCoverLoaded] = useState(false);
   const [coverFailed, setCoverFailed] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const [hoveredGeneration, setHoveredGeneration] = useState<number | null>(null);
   const [focused, setFocused] = useState(false);
+  const hovered = hoverEnabled && hoveredGeneration === hoverGeneration;
   const interaction = hovered || focused ? "hover" : "rest";
   const coverUrl = getCoverUrl(book);
 
@@ -97,18 +100,28 @@ export function BookCover({ book, index, reducedMotion, offsetX = 0, onHoverChan
   const metadataId = `book-result-metadata-${book.id}`;
 
   return (
-    <motion.article
+    <article
       className="book-result"
-      initial={false}
-      animate={{ x: reducedMotion ? 0 : offsetX }}
-      transition={springs.snappy}
-      onHoverStart={() => { setHovered(true); onHoverChange?.(true); }}
-      onHoverEnd={() => { setHovered(false); onHoverChange?.(false); }}
+      data-active={hovered || focused}
+      onPointerMove={(event) => {
+        // Layout changes can fire pointer-enter without the user moving.
+        if (event.pointerType !== "mouse" || !hoverEnabled || hovered) return;
+        setHoveredGeneration(hoverGeneration);
+        onHoverChange?.(true);
+      }}
+      onPointerLeave={() => { setHoveredGeneration(null); onHoverChange?.(false); }}
+      onPointerCancel={() => { setHoveredGeneration(null); onHoverChange?.(false); }}
       onFocus={() => { setFocused(true); onFocusChange?.(true); }}
       onBlur={() => { setFocused(false); onFocusChange?.(false); }}
       tabIndex={0}
       aria-describedby={metadataId}
     >
+      <motion.div
+        className="book-result-visual"
+        initial={false}
+        animate={{ transform: `translateX(${reducedMotion ? 0 : offsetX}px)` }}
+        transition={springs.snappy}
+      >
       <motion.div
         className="book-cover-lift"
         initial="rest"
@@ -156,6 +169,7 @@ export function BookCover({ book, index, reducedMotion, offsetX = 0, onHoverChan
           <span className="book-result-year">{book.firstPublished ?? "Year unknown"}</span>
         </motion.div>
       </div>
-    </motion.article>
+      </motion.div>
+    </article>
   );
 }

@@ -450,7 +450,7 @@ button {
   outline: none;
 }
 
-.book-result:hover,
+.book-result[data-active="true"],
 .book-result:focus-visible {
   z-index: 4;
 }
@@ -463,6 +463,12 @@ button {
 .book-cover-lift {
   width: 100%;
   will-change: transform;
+}
+
+.book-result-visual {
+  position: relative;
+  width: 100%;
+  pointer-events: none;
 }
 
 .book-cover {

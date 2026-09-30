@@ -54,6 +54,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   const runSearch = async (value: string) => {
     clearTimers();
     const searchId = ++searchSequence.current;
+    setHoveredBook(null);
     const isUpdatingResults = resultLayout;
     if (!isUpdatingResults) setResults([]);
     setState("searching");
@@ -159,6 +160,8 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
                       book={book}
                       index={index}
                       reducedMotion={reducedMotion}
+                      hoverEnabled={state === "settled" || state === "error"}
+                      hoverGeneration={searchSequence.current}
                       offsetX={activeIndex < 0 || index === activeIndex ? 0 : index < activeIndex ? -10 : 10}
                       onHoverChange={(active) => setHoveredBook((current) => active ? book.id : current === book.id ? null : current)}
                       onFocusChange={(active) => setFocusedBook((current) => active ? book.id : current === book.id ? null : current)}
