@@ -812,6 +812,25 @@ button {
   }
 }
 
+/* Landscape phones / short windows: keep covers, captions and input in view. */
+@media (max-height: 500px) {
+  .search-cluster {
+    --result-search-offset: calc(50dvh - 64px);
+  }
+
+  .result-region {
+    top: 38%;
+  }
+
+  .book-result {
+    flex-basis: clamp(72px, 23dvh, 115px);
+  }
+
+  .shelf-row {
+    height: 24dvh;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

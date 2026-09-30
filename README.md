@@ -70,8 +70,13 @@ The builder runs a cached Source → Filter → Score → Select → Report pipe
 
 ```bash
 npm test
+npx tsc --noEmit
 npm run build
+npx playwright install chromium webkit
+npm run test:e2e
 ```
+
+See [production safeguards](docs/production-safeguards.md) for responsive CI coverage, security protections, rate limits and **required Upstash configuration before deploying paid search**.
 
 ## Stack
 
