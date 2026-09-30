@@ -20,6 +20,8 @@ type BookshelfExperienceProps = {
 };
 
 export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const [showDevControls, setShowDevControls] = useState(false);
   const [query, setQuery] = useState("");
   const [state, setState] = useState<ExperienceState>("idle");
   const [results, setResults] = useState<Book[]>([]);
@@ -38,13 +40,27 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   };
 
   useEffect(() => {
+    if (!isDevelopment) return clearTimers;
     const savedBlur = window.localStorage.getItem("jev-shelf-blur");
     if (savedBlur !== null) {
       const parsedBlur = Number(savedBlur);
-      if (Number.isFinite(parsedBlur)) setShelfBlur(parsedBlur);
+      if (Number.isFinite(parsedBlur) && parsedBlur >= 0 && parsedBlur <= 8) setShelfBlur(parsedBlur);
     }
     return clearTimers;
-  }, []);
+  }, [isDevelopment]);
+
+  useEffect(() => {
+    if (!isDevelopment) return;
+    const toggleDevControls = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey
+        && event.key.toLowerCase() === "b" && !event.repeat) {
+        event.preventDefault();
+        setShowDevControls((visible) => !visible);
+      }
+    };
+    window.addEventListener("keydown", toggleDevControls);
+    return () => window.removeEventListener("keydown", toggleDevControls);
+  }, [isDevelopment]);
 
   const updateShelfBlur = (value: number) => {
     setShelfBlur(value);
@@ -231,24 +247,26 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
         </div>
       </section>
 
-      <aside className="dev-controls" aria-label="Visual development controls">
-        <div className="dev-controls-heading">
-          <SlidersHorizontal size={15} weight="bold" aria-hidden="true" />
-          <span>Blur</span>
-          <output htmlFor="shelf-blur">{effectiveBlur.toFixed(2)} px</output>
-        </div>
-        <input
-          id="shelf-blur"
-          type="range"
-          min="0"
-          max="8"
-          step="0.25"
-          value={effectiveBlur}
-          disabled={hasResults}
-          onChange={(event) => updateShelfBlur(Number(event.target.value))}
-          aria-label="Shelf blur strength"
-        />
-      </aside>
+      {isDevelopment && showDevControls && (
+        <aside className="dev-controls" aria-label="Visual development controls">
+          <div className="dev-controls-heading">
+            <SlidersHorizontal size={15} weight="bold" aria-hidden="true" />
+            <span>Blur</span>
+            <output htmlFor="shelf-blur">{effectiveBlur.toFixed(2)} px</output>
+          </div>
+          <input
+            id="shelf-blur"
+            type="range"
+            min="0"
+            max="8"
+            step="0.25"
+            value={effectiveBlur}
+            disabled={hasResults}
+            onChange={(event) => updateShelfBlur(Number(event.target.value))}
+            aria-label="Shelf blur strength"
+          />
+        </aside>
+      )}
 
       <a className="cover-credit" href="https://openlibrary.org" target="_blank" rel="noreferrer">
         Cover images from Open Library

@@ -17,6 +17,28 @@ describe("BookshelfExperience", () => {
     cleanup();
     window.localStorage.clear();
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it("hides development controls until the shortcut toggles them", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    render(<BookshelfExperience shelfRows={emptyShelves} />);
+    expect(screen.queryByLabelText("Shelf blur strength")).not.toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "B", ctrlKey: true, shiftKey: true });
+    expect(screen.getByLabelText("Shelf blur strength")).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "B", ctrlKey: true, shiftKey: true, repeat: true });
+    expect(screen.getByLabelText("Shelf blur strength")).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "B", ctrlKey: true, shiftKey: true });
+    expect(screen.queryByLabelText("Shelf blur strength")).not.toBeInTheDocument();
+  });
+
+  it("never exposes development controls or saved blur overrides in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    window.localStorage.setItem("jev-shelf-blur", "0");
+    const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
+    fireEvent.keyDown(window, { key: "B", ctrlKey: true, shiftKey: true });
+    expect(screen.queryByLabelText("Shelf blur strength")).not.toBeInTheDocument();
+    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("2.25px");
   });
 
   it("starts the search-icon motion with the first character and stops when editing ends", async () => {
@@ -53,6 +75,7 @@ describe("BookshelfExperience", () => {
   });
 
   it("clears a settled search and restores the idle controls", async () => {
+    vi.stubEnv("NODE_ENV", "development");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -62,6 +85,7 @@ describe("BookshelfExperience", () => {
     }));
     const user = userEvent.setup();
     const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
+    fireEvent.keyDown(window, { key: "B", ctrlKey: true, shiftKey: true });
     const blurSlider = screen.getByLabelText("Shelf blur strength");
     fireEvent.change(blurSlider, { target: { value: "1" } });
     expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("1px");
