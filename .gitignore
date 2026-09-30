@@ -28,3 +28,4 @@ test-results/
 # Generated API caches
 .cache/
 *.tsbuildinfo
+.vercel
