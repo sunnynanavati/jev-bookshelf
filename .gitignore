@@ -9,6 +9,8 @@ out/
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
 
 # Logs
 *.log
@@ -23,3 +25,6 @@ coverage/
 playwright-report/
 test-results/
 
+# Generated API caches
+.cache/
+*.tsbuildinfo

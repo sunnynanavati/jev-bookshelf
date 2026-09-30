@@ -1,0 +1,155 @@
+{
+  "generatedAt": "2026-09-29T13:23:47.869Z",
+  "target": 1000,
+  "total": 1000,
+  "collections": {
+    "fiction": 500,
+    "nonfiction": 500
+  },
+  "genres": {
+    "biography-memoir": 50,
+    "business-economics": 50,
+    "children-middle-grade": 50,
+    "essays-travel-true-crime": 50,
+    "fantasy": 50,
+    "graphic-fiction": 50,
+    "health-wellbeing": 50,
+    "historical-fiction": 50,
+    "history": 50,
+    "horror": 50,
+    "literary-contemporary": 50,
+    "mystery-thriller": 50,
+    "philosophy": 50,
+    "politics-society": 50,
+    "psychology": 50,
+    "romance": 50,
+    "science-fiction": 50,
+    "science-nature": 50,
+    "technology": 50,
+    "young-adult": 50
+  },
+  "decades": {
+    "1950-1979": 53,
+    "1980-1999": 174,
+    "2000-present": 679,
+    "pre-1950": 91,
+    "unknown": 3
+  },
+  "covers": 995,
+  "coverCoverage": 0.995,
+  "modernSince1980": 853,
+  "modernSince2000": 679,
+  "topAuthors": [
+    [
+      "Colleen Hoover",
+      8
+    ],
+    [
+      "Jeff Kinney",
+      8
+    ],
+    [
+      "Neil Gaiman",
+      8
+    ],
+    [
+      "Rick Riordan",
+      8
+    ],
+    [
+      "Sarah J. Maas",
+      8
+    ],
+    [
+      "Stephen King",
+      8
+    ],
+    [
+      "Robert Greene",
+      7
+    ],
+    [
+      "Walter Isaacson",
+      7
+    ],
+    [
+      "Brandon Sanderson",
+      6
+    ],
+    [
+      "George R. R. Martin",
+      6
+    ],
+    [
+      "Julia Quinn",
+      6
+    ],
+    [
+      "Tahereh Mafi",
+      6
+    ],
+    [
+      "Terry Pratchett",
+      6
+    ],
+    [
+      "Ana Huang",
+      5
+    ],
+    [
+      "Dan Brown",
+      5
+    ],
+    [
+      "Dav Pilkey",
+      5
+    ],
+    [
+      "J.K. Rowling",
+      5
+    ],
+    [
+      "Jenny Han",
+      5
+    ],
+    [
+      "John Green",
+      5
+    ],
+    [
+      "Lee Child",
+      5
+    ],
+    [
+      "Rachel Renée Russell",
+      5
+    ],
+    [
+      "Roald Dahl",
+      5
+    ],
+    [
+      "Stephenie Meyer",
+      5
+    ],
+    [
+      "Suzanne Collins",
+      5
+    ],
+    [
+      "Albert Camus",
+      4
+    ]
+  ],
+  "rejections": {
+    "blocked-title": 21,
+    "companion-or-collection": 38,
+    "duplicate": 486,
+    "fiction-in-nonfiction": 1305,
+    "invalid-title": 11,
+    "missing-author": 2,
+    "missing-cover": 23,
+    "non-english-script": 184,
+    "nonfiction-in-fiction": 4
+  }
+}

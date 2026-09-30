@@ -1,0 +1,129 @@
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { BookshelfExperience } from "@/components/bookshelf-experience";
+import { bookById } from "@/data/books";
+
+const emptyShelves = { top: [], bottom: [] };
+const resultFor = (id: string) => ({ book: bookById.get(id), probability: null });
+
+vi.mock("@/lib/covers", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/covers")>();
+  return { ...actual, preloadBookCovers: vi.fn().mockResolvedValue(undefined) };
+});
+
+describe("BookshelfExperience", () => {
+  afterEach(() => {
+    cleanup();
+    window.localStorage.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it("shows an empty-result message without suggested searches", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ mode: "demo", results: [] }),
+    }));
+    const user = userEvent.setup();
+    render(<BookshelfExperience shelfRows={emptyShelves} />);
+
+    await user.type(screen.getByLabelText("Ask your bookshelf"), "cookbooks about pasta");
+    await user.click(screen.getByRole("button", { name: "Search books" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("No matching books. Try another search.")).toBeInTheDocument();
+    });
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+  });
+
+  it("clears a settled search and restores the idle controls", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        mode: "demo",
+        results: [resultFor("nineteen-eighty-four")],
+      }),
+    }));
+    const user = userEvent.setup();
+    const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
+    const blurSlider = screen.getByLabelText("Shelf blur strength");
+    fireEvent.change(blurSlider, { target: { value: "1" } });
+    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("1px");
+
+    const input = screen.getByLabelText("Ask your bookshelf");
+    await user.type(input, "Dystopian surveillance");
+    await user.click(screen.getByRole("button", { name: "Search books" }));
+
+    await screen.findByRole("heading", { name: "Nineteen Eighty-Four" });
+    const searchCluster = container.querySelector(".search-cluster");
+    expect(searchCluster).toHaveClass("is-compact");
+    await user.click(input);
+    expect(searchCluster).not.toHaveClass("is-compact");
+    fireEvent.blur(input);
+    expect(searchCluster).toHaveClass("is-compact");
+    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("2.25px");
+    expect(blurSlider).toBeDisabled();
+    const clearButton = screen.getByRole("button", {
+      name: "Clear search and results",
+    });
+    await user.click(clearButton);
+
+    expect(input).toHaveValue("");
+    expect(searchCluster).not.toHaveClass("is-compact");
+    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("1px");
+    expect(blurSlider).not.toBeDisabled();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("heading", { name: "Nineteen Eighty-Four" }),
+      ).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: "Search books" })).toBeDisabled();
+    expect(screen.queryByRole("button", {
+      name: "Harry Potter books featuring Severus Snape",
+    })).not.toBeInTheDocument();
+  });
+
+  it("keeps the search bar in its result position while refining a search", async () => {
+    let resolveRefinedSearch: ((value: unknown) => void) | undefined;
+    const refinedSearch = new Promise((resolve) => {
+      resolveRefinedSearch = resolve;
+    });
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          mode: "demo",
+          results: [resultFor("philosophers-stone")],
+        }),
+      })
+      .mockReturnValueOnce(refinedSearch);
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
+
+    const input = screen.getByLabelText("Ask your bookshelf");
+    await user.type(input, "harry");
+    await user.click(screen.getByRole("button", { name: "Search books" }));
+    await screen.findByRole("heading", { name: "Harry Potter and the Philosopher's Stone" });
+
+    const searchCluster = container.querySelector(".search-cluster");
+    expect(searchCluster).toHaveClass("has-result-layout");
+
+    await user.type(input, " potter{enter}");
+    expect(searchCluster).toHaveClass("has-result-layout");
+    expect(screen.getByRole("heading", {
+      name: "Harry Potter and the Philosopher's Stone",
+    })).toBeInTheDocument();
+
+    resolveRefinedSearch?.({
+      ok: true,
+      json: async () => ({
+        mode: "demo",
+        results: [resultFor("chamber-secrets")],
+      }),
+    });
+
+    await screen.findByRole("heading", { name: "Harry Potter and the Chamber of Secrets" });
+    expect(searchCluster).toHaveClass("has-result-layout");
+  });
+});
