@@ -19,6 +19,22 @@ describe("BookshelfExperience", () => {
     vi.unstubAllGlobals();
   });
 
+  it("starts the search-icon motion with the first character and stops when editing ends", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
+    const input = screen.getByLabelText("Ask your bookshelf");
+    const icon = container.querySelector(".search-leading-icon");
+    await user.click(input);
+    expect(icon).not.toHaveClass("is-scanning");
+    await user.type(input, "h");
+    expect(icon).toHaveClass("is-scanning");
+    await user.clear(input);
+    expect(icon).not.toHaveClass("is-scanning");
+    await user.type(input, "h");
+    fireEvent.blur(input);
+    expect(icon).not.toHaveClass("is-scanning");
+  });
+
   it("shows an empty-result message without suggested searches", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,

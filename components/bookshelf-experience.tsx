@@ -181,7 +181,12 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
             }}
           >
             <label className="sr-only" htmlFor="book-search">Ask your bookshelf</label>
-            <MagnifyingGlass className="search-leading-icon" size={20} weight="regular" aria-hidden="true" />
+            <span
+              className={`search-leading-icon${query.trim() && searchExpanded && !reducedMotion ? " is-scanning" : ""}`}
+              aria-hidden="true"
+            >
+              <MagnifyingGlass size={24} weight="regular" />
+            </span>
             <input
               id="book-search"
               value={query}
