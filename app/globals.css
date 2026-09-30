@@ -129,8 +129,8 @@ button {
   position: relative;
   isolation: isolate;
   flex: none;
-  width: var(--book-width);
-  height: var(--book-height);
+  width: calc(var(--book-width) * var(--spine-scale, 1));
+  height: calc(var(--book-height) * var(--spine-scale, 1));
   overflow: hidden;
   color: var(--book-ink);
   background-color: var(--book-color);
@@ -706,6 +706,7 @@ button {
 @media (max-width: 720px) {
   .experience {
     --shelf-result-offset: clamp(40px, 7dvh, 64px);
+    --spine-scale: 0.82;
   }
   .search-cluster {
     --result-search-offset: 190px;
@@ -713,15 +714,6 @@ button {
 
   .shelf-row {
     height: 25dvh;
-  }
-
-  .book-sequence {
-    transform: scale(0.82);
-    transform-origin: left bottom;
-  }
-
-  .shelf-row-bottom .book-sequence {
-    transform-origin: left bottom;
   }
 
   .search-form {
@@ -748,7 +740,8 @@ button {
     justify-content: flex-start;
     gap: 10px;
     overflow-x: auto;
-    padding: 22px max(24px, calc((100vw - 342px) / 2));
+    padding: 22px max(24px, calc((100vw - 342px) / 2)) 88px;
+    background: transparent;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
@@ -760,6 +753,14 @@ button {
   .book-result {
     flex-basis: 128px;
     scroll-snap-align: center;
+  }
+
+  .book-cover {
+    box-shadow:
+      inset 5px 0 8px rgba(255, 255, 255, 0.12),
+      inset -4px 0 8px rgba(0, 0, 0, 0.16),
+      0 8px 16px rgba(29, 33, 35, 0.09),
+      0 2px 4px rgba(29, 33, 35, 0.06);
   }
 
   .dev-controls {
@@ -798,9 +799,8 @@ button {
     height: 30dvh;
   }
 
-  .book-sequence {
-    transform: scale(0.82);
-    transform-origin: left bottom;
+  .experience {
+    --spine-scale: 0.82;
   }
 
   .result-region {
