@@ -380,15 +380,18 @@ button {
   min-height: 64px;
   padding: 8px 8px 8px 22px;
   color: var(--graphite);
-  background: #f1f1f1;
-  border: 0;
+  background: #fff;
+  border: 1px solid rgba(38, 41, 45, 0.24);
   border-radius: 999px;
-  box-shadow: none;
-  transition: background-color 180ms ease;
+  box-shadow: 0 4px 18px rgba(40, 44, 46, 0.04);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
 .search-form:focus-within {
-  background: #eaeaea;
+  border-color: rgba(38, 41, 45, 0.68);
+  box-shadow:
+    0 4px 18px rgba(40, 44, 46, 0.05),
+    0 0 0 2px rgba(38, 41, 45, 0.06);
 }
 
 .search-leading-icon {
