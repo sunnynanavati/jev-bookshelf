@@ -12,7 +12,7 @@ export function rankBookProbabilities(
   allowedIds?: ReadonlySet<string>,
 ): RankedBook[] {
   return Object.entries(probabilities)
-    .filter(([id, probability]) => Number.isFinite(probability) && (!allowedIds || allowedIds.has(id)))
+    .filter(([id, probability]) => Number.isFinite(probability) && probability >= 0 && probability <= 1 && (!allowedIds || allowedIds.has(id)))
     .sort(([, left], [, right]) => right - left)
     .slice(0, limit)
     .map(([id, probability]) => ({ id, probability }));

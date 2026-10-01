@@ -70,8 +70,13 @@ The builder runs a cached Source → Filter → Score → Select → Report pipe
 
 ```bash
 npm test
+npx tsc --noEmit
 npm run build
+npx playwright install chromium webkit
+npm run test:e2e
 ```
+
+See [production safeguards](docs/production-safeguards.md) for responsive CI coverage, security protections and best-effort in-memory rate limits. No Redis or additional service configuration is needed.
 
 ## Stack
 
