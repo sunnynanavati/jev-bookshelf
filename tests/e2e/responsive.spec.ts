@@ -107,7 +107,8 @@ test("no-match responses remain clear and do not shift the input", async ({ page
   await page.route("**/api/search", (route) => route.fulfill({ json: { mode: "demo", results: [] } }));
   await page.goto("/");
   const input = page.getByRole("textbox");
-  await expect(page.locator(".search-entrance")).toHaveCSS("transform", "none");
+  await expect.poll(() => page.locator(".search-entrance").evaluate((element) =>
+    new DOMMatrixReadOnly(getComputedStyle(element).transform).m42)).toBe(0);
   const initial = await input.boundingBox();
   await input.fill("missing book");
   await input.press("Enter");
@@ -125,9 +126,11 @@ test("page entrance staggers from opposite edges and never replays during search
   await page.goto("/");
   const entrances = page.locator(".page-entrance");
   await expect(entrances).toHaveCount(3);
+  await expect(page.locator(".experience")).toHaveClass(/is-entry-ready/);
   const poses = await entrances.evaluateAll((elements) => elements.map((element) => {
     const style = getComputedStyle(element);
-    return { delay: style.animationDelay, y: new DOMMatrixReadOnly(style.transform).m42, opacity: style.opacity };
+    return { delay: style.animationDelay, duration: style.animationDuration, filter: style.filter,
+      y: new DOMMatrixReadOnly(style.transform).m42, opacity: style.opacity };
   }));
   expect(poses[0].delay).toBe("0s");
   expect(poses[0].y).toBeLessThan(0);
@@ -136,11 +139,28 @@ test("page entrance staggers from opposite edges and never replays during search
   expect(poses[2].delay).toBe("0.06s");
   expect(poses[2].y).toBeGreaterThan(0);
   expect(poses.map((pose) => pose.opacity)).toEqual(["0", "0", "0"]);
+  expect(poses.map((pose) => pose.duration)).toEqual(["0.5s", "0.5s", "0.5s"]);
+  expect(poses.map((pose) => Math.abs(pose.y))).toEqual([24, 24, 16]);
+  expect(poses.map((pose) => pose.filter)).toEqual(["blur(4px)", "blur(4px)", "blur(4px)"]);
 
-  // Input focus cancels decoration immediately; shelves finish independently.
+  // Focusing mid-flight must not snap the input into its final position.
   await page.getByRole("textbox").focus();
-  await expect(page.locator(".search-entrance")).toHaveCSS("animation-name", "none");
-  await page.locator(".shelf-entrance").evaluateAll((elements) => {
+  expect(await page.locator(".search-entrance").evaluate((element) =>
+    new DOMMatrixReadOnly(getComputedStyle(element).transform).m42)).toBe(16);
+  const midpoint = await entrances.evaluateAll((elements) => elements.map((element) => {
+    const animation = element.getAnimations()[0];
+    const timing = animation.effect!.getTiming();
+    animation.currentTime = Number(timing.delay) + Number(timing.duration) / 2;
+    const style = getComputedStyle(element);
+    return { y: new DOMMatrixReadOnly(style.transform).m42, opacity: Number(style.opacity), filter: style.filter };
+  }));
+  midpoint.forEach((pose, index) => {
+    expect(Math.abs(pose.y)).toBeLessThan(Math.abs(poses[index].y));
+    expect(pose.opacity).toBeGreaterThan(0);
+    expect(pose.opacity).toBeLessThan(1);
+    expect(pose.filter).not.toBe("blur(4px)");
+  });
+  await entrances.evaluateAll((elements) => {
     elements.forEach((element) => element.getAnimations().forEach((animation) => animation.finish()));
   });
   await page.getByRole("textbox").fill("books");
@@ -149,9 +169,40 @@ test("page entrance staggers from opposite edges and never replays during search
   await page.getByRole("button", { name: "Clear search and results" }).click();
   await expect(page.locator(".book-result")).toHaveCount(0);
   for (const entrance of await entrances.all()) {
-    await expect(entrance).toHaveCSS("transform", "none");
+    expect(await entrance.evaluate((element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m42)).toBe(0);
+    await expect(entrance).toHaveCSS("filter", "none");
     await expect(entrance).toHaveCSS("opacity", "1");
   }
+});
+
+test("cold-load hydration sizes the marquee before starting motion", async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  let releaseScripts!: () => void;
+  const scriptsReady = new Promise<void>((resolve) => { releaseScripts = resolve; });
+  await page.route("**/*.js", async (route) => {
+    await scriptsReady;
+    await route.continue();
+  });
+  try {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".experience")).not.toHaveClass(/is-entry-ready/);
+    await expect(page.locator(".marquee-track").first()).toHaveCSS("animation-play-state", "paused");
+    await expect(page.locator(".shelf-entrance").first()).toHaveCSS("animation-play-state", "paused");
+  } finally {
+    releaseScripts();
+  }
+  await expect(page.locator(".experience")).toHaveClass(/is-entry-ready/);
+  const before = await page.locator(".marquee-track").evaluateAll((tracks) => tracks.map((track) => ({
+    width: (track.firstElementChild as HTMLElement).offsetWidth,
+    duration: getComputedStyle(track).animationDuration,
+  })));
+  before.forEach((track) => expect(track.width).toBeGreaterThanOrEqual(1920));
+  await expect(page.locator(".shelf-entrance").last()).toHaveClass(/is-entered/);
+  const after = await page.locator(".marquee-track").evaluateAll((tracks) => tracks.map((track) => ({
+    width: (track.firstElementChild as HTMLElement).offsetWidth,
+    duration: getComputedStyle(track).animationDuration,
+  })));
+  expect(after).toEqual(before);
 });
 
 test("production API and security headers", async ({ request }) => {

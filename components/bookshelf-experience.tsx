@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, MagnifyingGlass, SlidersHorizontal, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { Book } from "@/lib/types";
@@ -28,6 +28,10 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   const [resultLayout, setResultLayout] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [searchEntranceComplete, setSearchEntranceComplete] = useState(false);
+  const [readyShelves, setReadyShelves] = useState({ top: false, bottom: false });
+  const onShelfReady = useCallback((position: "top" | "bottom") => {
+    setReadyShelves((current) => current[position] ? current : { ...current, [position]: true });
+  }, []);
   const [shelfBlur, setShelfBlur] = useState(0);
   const [hoveredBook, setHoveredBook] = useState<string | null>(null);
   const [focusedBook, setFocusedBook] = useState<string | null>(null);
@@ -161,13 +165,13 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
 
   return (
     <main
-      className={`experience state-${state}${resultLayout ? " has-result-layout" : ""}`}
+      className={`experience state-${state}${readyShelves.top && readyShelves.bottom ? " is-entry-ready" : ""}${resultLayout ? " has-result-layout" : ""}`}
       style={{ "--shelf-blur": `${effectiveBlur}px` } as CSSProperties}
     >
       <h1 className="sr-only">Jev Bookshelf</h1>
       <div className="shelves" aria-hidden="true">
-        <ShelfRow position="top" direction="right" books={shelfRows.top} />
-        <ShelfRow position="bottom" direction="left" books={shelfRows.bottom} />
+        <ShelfRow position="top" direction="right" books={shelfRows.top} onReady={onShelfReady} />
+        <ShelfRow position="bottom" direction="left" books={shelfRows.bottom} onReady={onShelfReady} />
       </div>
 
       <section className="interaction-layer" aria-label="Book search">
@@ -206,7 +210,6 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
         <div className={`search-cluster${resultLayout ? " has-result-layout" : ""}${hasResults && !searchExpanded ? " is-compact" : ""}`}>
           <div
             className={`search-entrance page-entrance${searchEntranceComplete ? " is-entered" : ""}`}
-            onFocusCapture={() => setSearchEntranceComplete(true)}
             onAnimationEnd={(event) => {
               if (event.target === event.currentTarget && event.animationName === "page-enter") {
                 setSearchEntranceComplete(true);

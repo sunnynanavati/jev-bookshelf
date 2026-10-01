@@ -93,10 +93,23 @@ button {
   bottom: 0;
 }
 
-/* Independent wrappers leave marquee and search-layout transforms untouched.
-   Backwards fill holds the starting pose during the stagger, not after entry. */
+/* A first-load reveal has a longer settle than recurring UI transitions.
+   The short travel and bounded blur avoid sweeping sharp rows across the screen. */
 .page-entrance {
-  animation: page-enter 300ms var(--ease-out) backwards;
+  animation: page-enter 500ms var(--ease-out) backwards paused;
+  transform: translate3d(0, 0, 0);
+}
+
+.page-entrance:not(.is-entered) {
+  will-change: transform, opacity, filter;
+}
+
+.experience.is-entry-ready .page-entrance {
+  animation-play-state: running;
+}
+
+.experience:not(.is-entry-ready) .marquee-track {
+  animation-play-state: paused;
 }
 
 .shelf-entrance {
@@ -105,28 +118,27 @@ button {
 }
 
 .shelf-row-top .shelf-entrance {
-  --entry-y: -100%;
+  --entry-y: -24px;
 }
 
 .search-entrance {
-  --entry-y: 100%;
+  --entry-y: 16px;
   animation-delay: 60ms;
 }
 
 .shelf-row-bottom .shelf-entrance {
-  --entry-y: 100%;
+  --entry-y: 24px;
   animation-delay: 120ms;
 }
 
-/* Decorative entry must never delay typing or keyboard navigation. */
-.search-entrance:focus-within,
-.search-entrance.is-entered {
+/* Focusing must not cancel the animation and snap to its target mid-flight. */
+.page-entrance.is-entered {
   animation: none;
 }
 
 @keyframes page-enter {
-  from { opacity: 0; transform: translate3d(0, var(--entry-y), 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
+  from { opacity: 0; filter: blur(4px); transform: translate3d(0, var(--entry-y), 0); }
+  to { opacity: 1; filter: blur(0px); transform: translate3d(0, 0, 0); }
 }
 
 .marquee-track {
@@ -881,6 +893,15 @@ button {
   .page-entrance,
   .marquee-track {
     animation: none;
+  }
+
+  .page-entrance {
+    transform: none;
+    will-change: auto;
+  }
+
+  .page-entrance:not(.is-entered) {
+    will-change: auto;
   }
 
   .search-leading-icon.is-scanning svg {
