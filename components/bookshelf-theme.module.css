@@ -1,10 +1,10 @@
-/* Comparison-only tokens. Every selector stays under this route's wrapper. */
-.preview {
+/* Shared bookshelf polish. Keep catalog styles outside this wrapper. */
+.theme {
   --ui-primary: #292929;
   --ui-secondary: #5d5d5d;
   --ui-supporting: #6b6b6b;
   --ui-border: rgba(41, 41, 41, 0.18);
-  --ui-focus: #0077e6;
+  --ui-focus: #292929;
   --ui-body-size: 16px;
   --ui-label-size: 13px;
   --ui-meta-size: 12px;
@@ -16,12 +16,12 @@
   letter-spacing: var(--ui-tracking);
 }
 
-.preview :global(.experience) {
+.theme :global(.experience) {
   --graphite: var(--ui-primary);
   --muted: var(--ui-secondary);
 }
 
-.preview :global(.search-form) {
+.theme :global(.search-form) {
   min-height: 60px;
   padding: 7px 7px 7px 20px;
   color: var(--ui-primary);
@@ -30,42 +30,42 @@
   box-shadow: 0 2px 8px rgba(41, 41, 41, 0.035);
 }
 
-.preview :global(.search-form:focus-within) {
-  border-color: var(--ui-focus);
-  box-shadow: 0 0 0 3px rgba(0, 119, 230, 0.1);
+.theme :global(.search-form:focus-within) {
+  border-color: rgba(41, 41, 41, 0.55);
+  box-shadow: 0 2px 8px rgba(41, 41, 41, 0.035);
 }
 
-.preview :global(.search-form input) {
+.theme :global(.search-form input) {
   font-size: var(--ui-body-size);
   font-weight: 400;
   letter-spacing: var(--ui-tracking);
   line-height: 24px;
 }
 
-.preview :global(.search-form input::placeholder) {
+.theme :global(.search-form input::placeholder) {
   color: var(--ui-supporting);
 }
 
-.preview :global(.search-leading-icon) {
+.theme :global(.search-leading-icon) {
   color: var(--ui-secondary);
 }
 
-.preview :global(.search-form button) {
+.theme :global(.search-form button) {
   background: var(--ui-primary);
   border-radius: var(--ui-pill-radius);
 }
 
-.preview :global(.search-form button:active:not(:disabled)) {
+.theme :global(.search-form button:active:not(:disabled)) {
   transform: scale(0.97);
 }
 
-.preview :global(.search-form button:focus-visible),
-.preview :global(.book-result:focus-visible .book-cover) {
+.theme :global(.search-form button:focus-visible),
+.theme :global(.book-result:focus-visible .book-cover) {
   outline: 2px solid var(--ui-focus);
   outline-offset: 4px;
 }
 
-.preview :global(.book-cover) {
+.theme :global(.book-cover) {
   border-radius: var(--ui-book-radius);
   box-shadow:
     inset 3px 0 5px rgba(255, 255, 255, 0.12),
@@ -73,7 +73,7 @@
     0 2px 4px rgba(41, 41, 41, 0.06);
 }
 
-.preview :global(.book-result-metadata) {
+.theme :global(.book-result-metadata) {
   gap: 2px;
   color: var(--ui-primary);
   font-size: var(--ui-meta-size);
@@ -82,20 +82,20 @@
   letter-spacing: var(--ui-tracking);
 }
 
-.preview :global(.book-result-title) {
+.theme :global(.book-result-title) {
   font-weight: 500;
 }
 
-.preview :global(.book-result-author) {
+.theme :global(.book-result-author) {
   color: var(--ui-secondary);
 }
 
-.preview :global(.book-result-year) {
+.theme :global(.book-result-year) {
   color: var(--ui-supporting);
   font-variant-numeric: tabular-nums;
 }
 
-.preview :global(.status) {
+.theme :global(.status) {
   color: var(--ui-secondary);
   font-size: var(--ui-label-size);
   font-weight: 400;
@@ -104,34 +104,40 @@
 }
 
 @media (min-width: 721px) and (min-height: 701px) {
-  .preview :global(.search-cluster) {
+  .theme :global(.search-cluster) {
     --result-search-offset: 245px;
   }
 }
 
+@media (min-width: 721px) and (min-height: 501px) and (max-height: 700px) {
+  .theme :global(.search-cluster) {
+    --result-search-offset: 215px;
+  }
+}
+
 @media (max-width: 720px) {
-  .preview :global(.search-form) {
+  .theme :global(.search-form) {
     min-height: 56px;
     padding: 5px 5px 5px 16px;
   }
 
-  .preview :global(.book-cover) {
+  .theme :global(.book-cover) {
     box-shadow: 0 6px 14px rgba(41, 41, 41, 0.08), 0 1px 3px rgba(41, 41, 41, 0.04);
   }
 
-  .preview :global(.cover-row) {
+  .theme :global(.cover-row) {
     padding-bottom: 104px;
   }
 }
 
 @media (max-width: 320px) {
-  .preview :global(.search-form) {
+  .theme :global(.search-form) {
     padding-left: 12px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .preview :global(.search-form button:active:not(:disabled)) {
+  .theme :global(.search-form button:active:not(:disabled)) {
     transform: none;
   }
 }

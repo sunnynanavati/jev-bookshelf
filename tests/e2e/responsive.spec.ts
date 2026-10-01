@@ -101,7 +101,7 @@ test("clicked books return to the tray on mouse leave while keyboard focus still
 });
 
 for (const [width, height] of [[320, 568], [768, 1024], [1440, 900]] as const) {
-  test(`UI comparison stays isolated and usable at ${width}x${height}`, async ({ page }, info) => {
+  test(`promoted UI theme stays consistent and usable at ${width}x${height}`, async ({ page }, info) => {
     await page.setViewportSize({ width, height });
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -111,6 +111,8 @@ for (const [width, height] of [[320, 568], [768, 1024], [1440, 900]] as const) {
     await expect(input).toHaveCSS("font-weight", "400");
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await input.fill("Harry Potter");
+    await expect(page.locator(".search-form")).toHaveCSS("border-top-color", "rgba(41, 41, 41, 0.55)");
+    await expect(page.locator(".search-form")).toHaveCSS("box-shadow", "rgba(41, 41, 41, 0.035) 0px 2px 8px 0px");
     await input.press("Enter");
     await expect(page.locator(".state-settled")).toBeVisible();
     const book = page.locator(".book-result").first();
@@ -135,8 +137,9 @@ for (const [width, height] of [[320, 568], [768, 1024], [1440, 900]] as const) {
     await input.press("Enter");
     await expect(page.getByRole("status")).toHaveText("No matching books. Try another search.");
     await page.goto("/");
-    await expect(page.getByRole("textbox")).toHaveCSS("font-weight", "500");
-    await expect(page.locator(".search-form")).toHaveCSS("border-top-color", "rgba(38, 41, 45, 0.24)");
+    await expect(page.getByRole("textbox")).toHaveCSS("font-size", "16px");
+    await expect(page.getByRole("textbox")).toHaveCSS("font-weight", "400");
+    await expect(page.locator(".search-form")).toHaveCSS("border-top-color", "rgba(41, 41, 41, 0.18)");
     expect(errors).toEqual([]);
   });
 }
