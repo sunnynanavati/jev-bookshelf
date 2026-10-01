@@ -100,6 +100,47 @@ test("clicked books return to the tray on mouse leave while keyboard focus still
   await expect(keyboardBook).toHaveAttribute("data-active", "false");
 });
 
+for (const [width, height] of [[320, 568], [768, 1024], [1440, 900]] as const) {
+  test(`UI comparison stays isolated and usable at ${width}x${height}`, async ({ page }, info) => {
+    await page.setViewportSize({ width, height });
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto("/ui-agentic");
+    const input = page.getByRole("textbox", { name: "Ask your bookshelf" });
+    await expect(input).toHaveCSS("font-size", "16px");
+    await expect(input).toHaveCSS("font-weight", "400");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await input.fill("Harry Potter");
+    await input.press("Enter");
+    await expect(page.locator(".state-settled")).toBeVisible();
+    const book = page.locator(".book-result").first();
+    await book.focus();
+    const metadata = book.locator(".book-result-metadata");
+    await expect(metadata).toHaveCSS("opacity", "1");
+    await expect(metadata).toHaveCSS("font-size", "12px");
+    const caption = await metadata.boundingBox();
+    const cover = await book.boundingBox();
+    const carousel = await page.locator(".cover-row").boundingBox();
+    const search = await input.boundingBox();
+    expect(caption!.width).toBeLessThanOrEqual(cover!.width + 1);
+    expect(caption!.y + caption!.height).toBeLessThan(search!.y);
+    if (width <= 720) expect(caption!.y + caption!.height).toBeLessThanOrEqual(carousel!.y + carousel!.height);
+    await info.attach("ui-comparison", { body: await page.screenshot({ animations: "disabled" }), contentType: "image/png" });
+    await page.getByRole("button", { name: "Clear search and results" }).click();
+    await expect(input).toHaveValue("");
+    await expect(page.locator(".book-result")).toHaveCount(0);
+
+    await page.route("**/api/search", (route) => route.fulfill({ json: { mode: "jev", results: [] } }));
+    await input.fill("No match");
+    await input.press("Enter");
+    await expect(page.getByRole("status")).toHaveText("No matching books. Try another search.");
+    await page.goto("/");
+    await expect(page.getByRole("textbox")).toHaveCSS("font-weight", "500");
+    await expect(page.locator(".search-form")).toHaveCSS("border-top-color", "rgba(38, 41, 45, 0.24)");
+    expect(errors).toEqual([]);
+  });
+}
+
 test("rate-limit feedback is visible without progress text", async ({ page }) => {
   await page.route("**/api/search", (route) => route.fulfill({ status: 429, headers: { "Retry-After": "42" }, json: { error: "Too many searches" } }));
   await page.goto("/");

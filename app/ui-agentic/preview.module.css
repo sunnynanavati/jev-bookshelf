@@ -1,0 +1,137 @@
+/* Comparison-only tokens. Every selector stays under this route's wrapper. */
+.preview {
+  --ui-primary: #292929;
+  --ui-secondary: #5d5d5d;
+  --ui-supporting: #6b6b6b;
+  --ui-border: rgba(41, 41, 41, 0.18);
+  --ui-focus: #0077e6;
+  --ui-body-size: 16px;
+  --ui-label-size: 13px;
+  --ui-meta-size: 12px;
+  --ui-tracking: -0.15px;
+  --ui-pill-radius: 999px;
+  --ui-book-radius: 3px 6px 6px 3px;
+  color: var(--ui-primary);
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  letter-spacing: var(--ui-tracking);
+}
+
+.preview :global(.experience) {
+  --graphite: var(--ui-primary);
+  --muted: var(--ui-secondary);
+}
+
+.preview :global(.search-form) {
+  min-height: 60px;
+  padding: 7px 7px 7px 20px;
+  color: var(--ui-primary);
+  border-color: var(--ui-border);
+  border-radius: var(--ui-pill-radius);
+  box-shadow: 0 2px 8px rgba(41, 41, 41, 0.035);
+}
+
+.preview :global(.search-form:focus-within) {
+  border-color: var(--ui-focus);
+  box-shadow: 0 0 0 3px rgba(0, 119, 230, 0.1);
+}
+
+.preview :global(.search-form input) {
+  font-size: var(--ui-body-size);
+  font-weight: 400;
+  letter-spacing: var(--ui-tracking);
+  line-height: 24px;
+}
+
+.preview :global(.search-form input::placeholder) {
+  color: var(--ui-supporting);
+}
+
+.preview :global(.search-leading-icon) {
+  color: var(--ui-secondary);
+}
+
+.preview :global(.search-form button) {
+  background: var(--ui-primary);
+  border-radius: var(--ui-pill-radius);
+}
+
+.preview :global(.search-form button:active:not(:disabled)) {
+  transform: scale(0.97);
+}
+
+.preview :global(.search-form button:focus-visible),
+.preview :global(.book-result:focus-visible .book-cover) {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 4px;
+}
+
+.preview :global(.book-cover) {
+  border-radius: var(--ui-book-radius);
+  box-shadow:
+    inset 3px 0 5px rgba(255, 255, 255, 0.12),
+    0 12px 24px rgba(41, 41, 41, 0.1),
+    0 2px 4px rgba(41, 41, 41, 0.06);
+}
+
+.preview :global(.book-result-metadata) {
+  gap: 2px;
+  color: var(--ui-primary);
+  font-size: var(--ui-meta-size);
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: var(--ui-tracking);
+}
+
+.preview :global(.book-result-title) {
+  font-weight: 500;
+}
+
+.preview :global(.book-result-author) {
+  color: var(--ui-secondary);
+}
+
+.preview :global(.book-result-year) {
+  color: var(--ui-supporting);
+  font-variant-numeric: tabular-nums;
+}
+
+.preview :global(.status) {
+  color: var(--ui-secondary);
+  font-size: var(--ui-label-size);
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: var(--ui-tracking);
+}
+
+@media (min-width: 721px) and (min-height: 701px) {
+  .preview :global(.search-cluster) {
+    --result-search-offset: 245px;
+  }
+}
+
+@media (max-width: 720px) {
+  .preview :global(.search-form) {
+    min-height: 56px;
+    padding: 5px 5px 5px 16px;
+  }
+
+  .preview :global(.book-cover) {
+    box-shadow: 0 6px 14px rgba(41, 41, 41, 0.08), 0 1px 3px rgba(41, 41, 41, 0.04);
+  }
+
+  .preview :global(.cover-row) {
+    padding-bottom: 104px;
+  }
+}
+
+@media (max-width: 320px) {
+  .preview :global(.search-form) {
+    padding-left: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview :global(.search-form button:active:not(:disabled)) {
+    transform: none;
+  }
+}

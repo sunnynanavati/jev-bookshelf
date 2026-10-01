@@ -42,6 +42,12 @@ During `npm run dev`, press **Ctrl + Shift + B** to show or hide the blur slider
 
 Open [http://localhost:3000/catalog](http://localhost:3000/catalog) to inspect the catalog and its Open Library records.
 
+## UI comparison
+
+Open [http://localhost:3000/ui-agentic](http://localhost:3000/ui-agentic) to try the isolated UI Agentic polish pass. It shares the real search, catalog, shelf samples, and interactions with the homepage; it does not use separate sample data or a different search service.
+
+The experiment uses native system typography, regular-weight search text, readable 12px captions, restrained book shadows, and blue focus indicators. Its CSS Module is scoped beneath a route-only wrapper, leaving `/` unchanged. It is unlinked from the homepage and marked `noindex`, but it is a public comparison route, not a private or authenticated page.
+
 ## Search architecture
 
 1. A deterministic in-memory index scores the 1,000 records by title, author, people, genre, subject, and place.
