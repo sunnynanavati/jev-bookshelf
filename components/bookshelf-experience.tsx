@@ -219,8 +219,12 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
             <form
               className="search-form"
               onSubmit={onSubmit}
-              onPointerDown={() => setSearchExpanded(true)}
-              onFocusCapture={() => setSearchExpanded(true)}
+              onPointerDown={(event) => {
+                // Keep action buttons stationary between pointer-down and click.
+                if (event.target instanceof Element && !event.target.closest("button")) {
+                  setSearchExpanded(true);
+                }
+              }}
               onBlurCapture={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) setSearchExpanded(false);
               }}
@@ -235,6 +239,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
               <input
                 id="book-search"
                 value={query}
+                onFocus={() => setSearchExpanded(true)}
                 onChange={(event) => {
                   setQuery(event.target.value);
                   setSearchExpanded(true);

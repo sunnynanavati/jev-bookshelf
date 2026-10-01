@@ -124,7 +124,9 @@ describe("BookshelfExperience", () => {
     const clearButton = screen.getByRole("button", {
       name: "Clear search and results",
     });
-    await user.click(clearButton);
+    await user.pointer({ target: clearButton, keys: "[MouseLeft>]" });
+    expect(searchCluster).toHaveClass("is-compact");
+    await user.pointer({ keys: "[/MouseLeft]" });
 
     expect(input).toHaveValue("");
     expect(searchCluster).not.toHaveClass("is-compact");

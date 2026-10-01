@@ -81,6 +81,33 @@ test("rate-limit feedback is visible without progress text", async ({ page }) =>
   await expect(page.getByRole("status")).toHaveText("Too many searches. Try again in 42 seconds.");
 });
 
+test("pressing the compact clear button does not move it before release", async ({ page }) => {
+  await page.goto("/");
+  const input = page.getByRole("textbox", { name: "Ask your bookshelf" });
+  await input.fill("Harry Potter");
+  await input.press("Enter");
+  await expect(page.locator(".state-settled")).toBeVisible();
+  const cluster = page.locator(".search-cluster");
+  await expect(cluster).toHaveClass(/is-compact/);
+  const clear = page.getByRole("button", { name: "Clear search and results" });
+  await clear.focus();
+  await expect(cluster).toHaveClass(/is-compact/);
+  // Wait for the completed compact layout, then preserve real mouse coordinates.
+  await expect.poll(async () => Math.round((await cluster.boundingBox())!.width)).toBe(420);
+  const before = (await clear.boundingBox())!;
+  await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+  await page.mouse.down();
+  await expect(cluster).toHaveClass(/is-compact/);
+  const pressed = (await clear.boundingBox())!;
+  // The button's existing press-scale is allowed; its center must stay put.
+  expect(Math.abs(pressed.x + pressed.width / 2 - before.x - before.width / 2)).toBeLessThan(1);
+  await page.mouse.up();
+  await expect(input).toHaveValue("");
+  await expect(page.locator(".book-result")).toHaveCount(0);
+  await expect(cluster).not.toHaveClass(/has-result-layout/);
+  await expect(page.locator(".shelves")).toHaveCSS("filter", "blur(0px)");
+});
+
 test("resize and reduced-motion preserve the result layout", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });
