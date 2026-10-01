@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, useRef, useState } from "react";
 import { motion, type Variants } from "motion/react";
 import type { Book } from "@/lib/types";
 import { getCoverUrl } from "@/lib/covers";
@@ -87,6 +87,7 @@ export function BookCover({ book, index, reducedMotion, offsetX = 0, hoverEnable
   const [coverFailed, setCoverFailed] = useState(false);
   const [hoveredGeneration, setHoveredGeneration] = useState<number | null>(null);
   const [focused, setFocused] = useState(false);
+  const mouseFocus = useRef(false);
   const hovered = hoverEnabled && hoveredGeneration === hoverGeneration;
   const interaction = hovered || focused ? "hover" : "rest";
   const coverUrl = getCoverUrl(book);
@@ -103,6 +104,15 @@ export function BookCover({ book, index, reducedMotion, offsetX = 0, hoverEnable
     <article
       className="book-result"
       data-active={hovered || focused}
+      onPointerDown={(event) => {
+        // Mouse clicks must not latch the focus-driven lift after hover ends.
+        // Keyboard focus and touch selection still expose the book details.
+        mouseFocus.current = event.pointerType === "mouse";
+        if (mouseFocus.current) {
+          setFocused(false);
+          onFocusChange?.(false);
+        }
+      }}
       onPointerMove={(event) => {
         // Layout changes can fire pointer-enter without the user moving.
         if (event.pointerType !== "mouse" || !hoverEnabled || hovered) return;
@@ -111,8 +121,14 @@ export function BookCover({ book, index, reducedMotion, offsetX = 0, hoverEnable
       }}
       onPointerLeave={() => { setHoveredGeneration(null); onHoverChange?.(false); }}
       onPointerCancel={() => { setHoveredGeneration(null); onHoverChange?.(false); }}
-      onFocus={() => { setFocused(true); onFocusChange?.(true); }}
-      onBlur={() => { setFocused(false); onFocusChange?.(false); }}
+      onFocus={() => {
+        if (!mouseFocus.current) { setFocused(true); onFocusChange?.(true); }
+      }}
+      onBlur={() => {
+        mouseFocus.current = false;
+        setFocused(false);
+        onFocusChange?.(false);
+      }}
       tabIndex={0}
       aria-describedby={metadataId}
     >

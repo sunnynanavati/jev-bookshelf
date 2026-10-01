@@ -73,6 +73,33 @@ for (const [width, height] of sizes) {
   });
 }
 
+test("clicked books return to the tray on mouse leave while keyboard focus still reveals details", async ({ page }) => {
+  await page.goto("/");
+  const input = page.getByRole("textbox", { name: "Ask your bookshelf" });
+  await input.fill("Harry Potter");
+  await input.press("Enter");
+  await expect(page.locator(".state-settled")).toBeVisible();
+  const book = page.locator(".book-result").nth(2);
+  const metadata = book.locator(".book-result-metadata");
+  await book.hover();
+  await expect(book).toHaveAttribute("data-active", "true");
+  await book.click();
+  await page.mouse.move(10, 10);
+  await expect(book).toHaveAttribute("data-active", "false");
+  await expect(metadata).toHaveCSS("opacity", "0");
+  await expect(book.locator(".book-cover-lift")).toHaveCSS("transform", "none");
+  await expect(page.locator('.book-result[data-active="true"]')).toHaveCount(0);
+
+  await input.focus();
+  await input.press("Shift+Tab");
+  const keyboardBook = page.locator(".book-result").last();
+  await expect(keyboardBook).toBeFocused();
+  await expect(keyboardBook).toHaveAttribute("data-active", "true");
+  await expect(keyboardBook.locator(".book-result-metadata")).toHaveCSS("opacity", "1");
+  await page.keyboard.press("Tab");
+  await expect(keyboardBook).toHaveAttribute("data-active", "false");
+});
+
 test("rate-limit feedback is visible without progress text", async ({ page }) => {
   await page.route("**/api/search", (route) => route.fulfill({ status: 429, headers: { "Retry-After": "42" }, json: { error: "Too many searches" } }));
   await page.goto("/");

@@ -52,6 +52,25 @@ describe("BookCover hover metadata", () => {
     expect(result).toHaveAttribute("data-active", "false");
   });
 
+  it("returns to rest after a mouse click and pointer leave even while browser focus remains", () => {
+    const onFocusChange = vi.fn();
+    render(<BookCover book={bookById.get("nineteen-eighty-four")!} index={0} reducedMotion onFocusChange={onFocusChange} />);
+    const result = screen.getByRole("article");
+    movePointer(result);
+    const press = new MouseEvent("pointerdown", { bubbles: true });
+    Object.defineProperty(press, "pointerType", { value: "mouse" });
+    fireEvent(result, press);
+    fireEvent.focus(result);
+    fireEvent.click(result);
+    expect(result).toHaveAttribute("data-active", "true");
+    fireEvent.pointerLeave(result);
+    expect(result).toHaveAttribute("data-active", "false");
+    expect(onFocusChange).not.toHaveBeenCalledWith(true);
+    fireEvent.blur(result);
+    fireEvent.focus(result);
+    expect(result).toHaveAttribute("data-active", "true");
+  });
+
   it("renders title, author, and publication year as separate metadata lines", () => {
     const book = bookById.get("nineteen-eighty-four");
     expect(book).toBeDefined();
