@@ -37,14 +37,16 @@ export function ShelfRow({ direction, position, books }: ShelfRowProps) {
 
   return (
     <div className={`shelf-row shelf-row-${position}`} aria-hidden="true">
-      <div ref={trackRef} className={`marquee-track marquee-${direction}`}>
-        {[0, 1].map((copy) => (
-          <div className="book-sequence" key={copy}>
-            {Array.from({ length: repeats }, (_, repeat) => books.map((book) => (
-              <BookSpine book={book} key={`${copy}-${repeat}-${book.id}`} />
-            )))}
-          </div>
-        ))}
+      <div className="shelf-entrance page-entrance">
+        <div ref={trackRef} className={`marquee-track marquee-${direction}`}>
+          {[0, 1].map((copy) => (
+            <div className="book-sequence" key={copy}>
+              {Array.from({ length: repeats }, (_, repeat) => books.map((book) => (
+                <BookSpine book={book} key={`${copy}-${repeat}-${book.id}`} />
+              )))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

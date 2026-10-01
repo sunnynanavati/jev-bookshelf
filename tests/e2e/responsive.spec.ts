@@ -89,6 +89,11 @@ test("resize and reduced-motion preserve the result layout", async ({ page }) =>
   await page.getByRole("textbox").press("Enter");
   await expect(page.locator(".state-settled")).toBeVisible();
   await expect(page.locator(".marquee-track").first()).toHaveCSS("animation-name", "none");
+  for (const entrance of await page.locator(".page-entrance").all()) {
+    await expect(entrance).toHaveCSS("animation-name", "none");
+    await expect(entrance).toHaveCSS("transform", "none");
+    await expect(entrance).toHaveCSS("opacity", "1");
+  }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator(".book-result").last().focus();
   await expect(page.locator(".book-result-metadata").last()).toHaveCSS("opacity", "1");
@@ -102,12 +107,51 @@ test("no-match responses remain clear and do not shift the input", async ({ page
   await page.route("**/api/search", (route) => route.fulfill({ json: { mode: "demo", results: [] } }));
   await page.goto("/");
   const input = page.getByRole("textbox");
+  await expect(page.locator(".search-entrance")).toHaveCSS("transform", "none");
   const initial = await input.boundingBox();
   await input.fill("missing book");
   await input.press("Enter");
   await expect(page.getByRole("status")).toHaveText("No matching books. Try another search.");
   expect(Math.abs((await input.boundingBox())!.y - initial!.y)).toBeLessThan(2);
   await expect(page.locator(".shelves")).toHaveCSS("filter", "blur(0px)");
+});
+
+test("page entrance staggers from opposite edges and never replays during search", async ({ page }) => {
+  // Freeze at the initial pose, independently of machine/load speed.
+  await page.route("**/*.css", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, body: `${await response.text()}\n.page-entrance { animation-play-state: paused !important; }` });
+  });
+  await page.goto("/");
+  const entrances = page.locator(".page-entrance");
+  await expect(entrances).toHaveCount(3);
+  const poses = await entrances.evaluateAll((elements) => elements.map((element) => {
+    const style = getComputedStyle(element);
+    return { delay: style.animationDelay, y: new DOMMatrixReadOnly(style.transform).m42, opacity: style.opacity };
+  }));
+  expect(poses[0].delay).toBe("0s");
+  expect(poses[0].y).toBeLessThan(0);
+  expect(poses[1].delay).toBe("0.12s");
+  expect(poses[1].y).toBeGreaterThan(0);
+  expect(poses[2].delay).toBe("0.06s");
+  expect(poses[2].y).toBeGreaterThan(0);
+  expect(poses.map((pose) => pose.opacity)).toEqual(["0", "0", "0"]);
+
+  // Input focus cancels decoration immediately; shelves finish independently.
+  await page.getByRole("textbox").focus();
+  await expect(page.locator(".search-entrance")).toHaveCSS("animation-name", "none");
+  await page.locator(".shelf-entrance").evaluateAll((elements) => {
+    elements.forEach((element) => element.getAnimations().forEach((animation) => animation.finish()));
+  });
+  await page.getByRole("textbox").fill("books");
+  await page.getByRole("textbox").press("Enter");
+  await expect(page.locator(".book-result")).toHaveCount(5);
+  await page.getByRole("button", { name: "Clear search and results" }).click();
+  await expect(page.locator(".book-result")).toHaveCount(0);
+  for (const entrance of await entrances.all()) {
+    await expect(entrance).toHaveCSS("transform", "none");
+    await expect(entrance).toHaveCSS("opacity", "1");
+  }
 });
 
 test("production API and security headers", async ({ request }) => {

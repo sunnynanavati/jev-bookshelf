@@ -27,6 +27,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   const [results, setResults] = useState<Book[]>([]);
   const [resultLayout, setResultLayout] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchEntranceComplete, setSearchEntranceComplete] = useState(false);
   const [shelfBlur, setShelfBlur] = useState(0);
   const [hoveredBook, setHoveredBook] = useState<string | null>(null);
   const [focusedBook, setFocusedBook] = useState<string | null>(null);
@@ -203,56 +204,66 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
         </AnimatePresence>
 
         <div className={`search-cluster${resultLayout ? " has-result-layout" : ""}${hasResults && !searchExpanded ? " is-compact" : ""}`}>
-          <form
-            className="search-form"
-            onSubmit={onSubmit}
-            onPointerDown={() => setSearchExpanded(true)}
-            onFocusCapture={() => setSearchExpanded(true)}
-            onBlurCapture={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget)) setSearchExpanded(false);
+          <div
+            className={`search-entrance page-entrance${searchEntranceComplete ? " is-entered" : ""}`}
+            onFocusCapture={() => setSearchEntranceComplete(true)}
+            onAnimationEnd={(event) => {
+              if (event.target === event.currentTarget && event.animationName === "page-enter") {
+                setSearchEntranceComplete(true);
+              }
             }}
           >
-            <label className="sr-only" htmlFor="book-search">Ask your bookshelf</label>
-            <span
-              className={`search-leading-icon${query.trim() && searchExpanded && !reducedMotion ? " is-scanning" : ""}`}
-              aria-hidden="true"
-            >
-              <MagnifyingGlass size={24} weight="regular" />
-            </span>
-            <input
-              id="book-search"
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setSearchExpanded(true);
+            <form
+              className="search-form"
+              onSubmit={onSubmit}
+              onPointerDown={() => setSearchExpanded(true)}
+              onFocusCapture={() => setSearchExpanded(true)}
+              onBlurCapture={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) setSearchExpanded(false);
               }}
-              placeholder="Ask your bookshelf"
-              autoComplete="off"
-              spellCheck="false"
-              maxLength={500}
-            />
-            <button
-              type={showClear ? "button" : "submit"}
-              aria-label={showClear ? "Clear search and results" : "Search books"}
-              disabled={!showClear && (!query.trim() || state === "searching")}
-              onClick={showClear ? clearSearch : undefined}
             >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  className="search-action-icon"
-                  key={showClear ? "clear" : "submit"}
-                  initial={reducedMotion ? { opacity: 0 } : { opacity: 0, transform: "rotate(-45deg) scale(0.92)" }}
-                  animate={{ opacity: 1, transform: "rotate(0deg) scale(1)" }}
-                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, transform: "rotate(45deg) scale(0.92)" }}
-                  transition={{ duration: reducedMotion ? 0.01 : 0.16, ease: [0.23, 1, 0.32, 1] }}
-                >
-                  {showClear
-                    ? <X size={22} weight="bold" aria-hidden="true" />
-                    : <ArrowRight size={21} weight="bold" aria-hidden="true" />}
-                </motion.span>
-              </AnimatePresence>
-            </button>
-          </form>
+              <label className="sr-only" htmlFor="book-search">Ask your bookshelf</label>
+              <span
+                className={`search-leading-icon${query.trim() && searchExpanded && !reducedMotion ? " is-scanning" : ""}`}
+                aria-hidden="true"
+              >
+                <MagnifyingGlass size={24} weight="regular" />
+              </span>
+              <input
+                id="book-search"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setSearchExpanded(true);
+                }}
+                placeholder="Ask your bookshelf"
+                autoComplete="off"
+                spellCheck="false"
+                maxLength={500}
+              />
+              <button
+                type={showClear ? "button" : "submit"}
+                aria-label={showClear ? "Clear search and results" : "Search books"}
+                disabled={!showClear && (!query.trim() || state === "searching")}
+                onClick={showClear ? clearSearch : undefined}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    className="search-action-icon"
+                    key={showClear ? "clear" : "submit"}
+                    initial={reducedMotion ? { opacity: 0 } : { opacity: 0, transform: "rotate(-45deg) scale(0.92)" }}
+                    animate={{ opacity: 1, transform: "rotate(0deg) scale(1)" }}
+                    exit={reducedMotion ? { opacity: 0 } : { opacity: 0, transform: "rotate(45deg) scale(0.92)" }}
+                    transition={{ duration: reducedMotion ? 0.01 : 0.16, ease: [0.23, 1, 0.32, 1] }}
+                  >
+                    {showClear
+                      ? <X size={22} weight="bold" aria-hidden="true" />
+                      : <ArrowRight size={21} weight="bold" aria-hidden="true" />}
+                  </motion.span>
+                </AnimatePresence>
+              </button>
+            </form>
+          </div>
 
           <div className="status" role="status" aria-live="polite">
             {state === "unsupported" && "No matching books. Try another search."}

@@ -9,6 +9,7 @@
   --marquee-duration: 86s;
   --shelf-blur: 0px;
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 * {
@@ -90,6 +91,42 @@ button {
 
 .shelf-row-bottom {
   bottom: 0;
+}
+
+/* Independent wrappers leave marquee and search-layout transforms untouched.
+   Backwards fill holds the starting pose during the stagger, not after entry. */
+.page-entrance {
+  animation: page-enter 300ms var(--ease-out) backwards;
+}
+
+.shelf-entrance {
+  width: 100%;
+  height: 100%;
+}
+
+.shelf-row-top .shelf-entrance {
+  --entry-y: -100%;
+}
+
+.search-entrance {
+  --entry-y: 100%;
+  animation-delay: 60ms;
+}
+
+.shelf-row-bottom .shelf-entrance {
+  --entry-y: 100%;
+  animation-delay: 120ms;
+}
+
+/* Decorative entry must never delay typing or keyboard navigation. */
+.search-entrance:focus-within,
+.search-entrance.is-entered {
+  animation: none;
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translate3d(0, var(--entry-y), 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 .marquee-track {
@@ -841,6 +878,7 @@ button {
     transition-duration: 0.01ms !important;
   }
 
+  .page-entrance,
   .marquee-track {
     animation: none;
   }
