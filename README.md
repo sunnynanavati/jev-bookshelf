@@ -76,7 +76,7 @@ npx playwright install chromium webkit
 npm run test:e2e
 ```
 
-See [production safeguards](docs/production-safeguards.md) for responsive CI coverage, security protections, rate limits and **required Upstash configuration before deploying paid search**.
+See [production safeguards](docs/production-safeguards.md) for responsive CI coverage, security protections and best-effort in-memory rate limits. No Redis or additional service configuration is needed.
 
 ## Stack
 

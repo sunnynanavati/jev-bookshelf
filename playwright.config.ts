@@ -20,6 +20,6 @@ export default defineConfig({
     command: "npm run start -- --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
-    env: { TYPESAFE_API_KEY: "", VERCEL: "", UPSTASH_REDIS_REST_URL: "", UPSTASH_REDIS_REST_TOKEN: "" },
+    env: { TYPESAFE_API_KEY: "", VERCEL: "" },
   },
 });

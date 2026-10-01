@@ -37,31 +37,23 @@ describe("search budgets", () => {
     expect(limit([{ key: "user", limit: 1, seconds: 60 }, { key: "global", limit: 1, seconds: 86400 }]).allowed).toBe(false);
     expect(limit([{ key: "user", limit: 1, seconds: 60 }]).allowed).toBe(true);
   });
-  it("blocks paid production searches without a shared store", async () => {
+  it("allows paid production searches without an external store and enforces the minute budget", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
-    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
-    await expect(checkSearchRateLimit(new Request("https://example.com", { headers: { "x-vercel-forwarded-for": "203.0.113.1" } }), true)).rejects.toThrow("Shared rate limiter");
+    const request = new Request("https://example.com", { headers: { "x-vercel-forwarded-for": "203.0.113.1" } });
+    for (let index = 0; index < 20; index++) expect((await checkSearchRateLimit(request, true)).allowed).toBe(true);
+    expect((await checkSearchRateLimit(request, true)).allowed).toBe(false);
   });
-  it("uses one atomic Redis command and hashes the trusted IP", async () => {
+  it("keeps IP budgets separate and does not trust spoofable forwarding headers", async () => {
     vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://example.upstash.io");
-    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "test-token");
-    const fetch = vi.fn().mockResolvedValue(Response.json({ result: [0, 42] }));
-    vi.stubGlobal("fetch", fetch);
-    const request = new Request("https://example.com", { headers: { "x-vercel-forwarded-for": "203.0.113.1", "x-forwarded-for": "spoofed" } });
-    expect(await checkSearchRateLimit(request, true)).toEqual({ allowed: false, retryAfter: 42 });
-    const command = JSON.parse(fetch.mock.calls[0][1].body);
-    expect(command[0]).toBe("EVAL");
-    expect(command[2]).toBe(3);
-    expect(command.slice(3, 6).join()).not.toContain("203.0.113.1");
-    expect(command.slice(6)).toEqual([20, 60, 200, 86400, 500, 86400]);
-    fetch.mockResolvedValueOnce(Response.json({ error: "Redis failed" }));
-    await expect(checkSearchRateLimit(request, true)).rejects.toThrow("Invalid rate limit response");
+    const request = new Request("https://example.com", { headers: { "x-vercel-forwarded-for": "203.0.113.2" } });
+    for (let index = 0; index < 20; index++) expect((await checkSearchRateLimit(request, false)).allowed).toBe(true);
+    const spoofed = new Request("https://example.com", { headers: { "x-vercel-forwarded-for": "203.0.113.2", "x-forwarded-for": "203.0.113.3" } });
+    expect((await checkSearchRateLimit(spoofed, false)).allowed).toBe(false);
+    expect((await checkSearchRateLimit(new Request("https://example.com", { headers: { "x-vercel-forwarded-for": "203.0.113.3" } }), false)).allowed).toBe(true);
   });
-  it("rejects untrusted/missing IP identity on Vercel", async () => {
+  it("uses an anonymous bucket when a trusted identity is unavailable", async () => {
     vi.stubEnv("VERCEL", "1");
-    await expect(checkSearchRateLimit(new Request("https://example.com", { headers: { "x-forwarded-for": "203.0.113.1" } }), true)).rejects.toThrow("trusted client IP");
+    expect((await checkSearchRateLimit(new Request("https://example.com"), false)).allowed).toBe(true);
   });
 });

@@ -6,12 +6,9 @@ Before this change, search checked query length and kept the Jev key server-side
 
 Security headers disable framing, MIME sniffing and unused camera/microphone/location permissions. These are baseline protections, not a complete security certification or a strict script Content Security Policy.
 
-## Shared limits and setup — required before merging/deploying
+## Best-effort limits — no additional setup
 
-1. Create or connect an **Upstash Redis** database through Vercel's Storage/Marketplace, or directly in Upstash. Choose a suitable region and review its pricing. No account/database is created by the code.
-2. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` from that database to the Vercel project's server environment. Use a read/write token (the limiter runs an atomic Lua script). Never use a `NEXT_PUBLIC_` prefix or paste secrets into GitHub/issues/chat.
-3. Configure Production and any Preview environment that has a TypeSafe key. Preview and production counters are separated by `VERCEL_ENV`. Projects sharing one database and environment share budgets; use a separate database for unrelated apps.
-4. Redeploy after setting the variables. Test a staging/preview deployment, including a burst of 21 valid searches: the first 20 may proceed, the 21st should return 429 with `Retry-After`, without calling Jev. This is a paid verification if a real key is enabled. Confirm counter keys/expiry in Redis and no credentials in logs.
+This hobby demo uses an in-memory limiter. The existing server-only `TYPESAFE_API_KEY` is sufficient; no Upstash/Redis account, credentials or network calls are needed.
 
 Defaults (in `lib/rate-limit.ts`):
 
@@ -19,13 +16,13 @@ Defaults (in `lib/rate-limit.ts`):
 | --- | --- | --- |
 | Per IP | 20 searches | 60 seconds |
 | Per IP | 200 searches | 86,400 seconds |
-| All paid searches | 500 admitted searches | 86,400 seconds |
+| Paid searches per server instance | 500 admitted searches | 86,400 seconds |
 
-Windows begin on first admitted use, not at midnight. An atomic Redis script checks all budgets before consuming them, preventing parallel server instances from each granting a fresh allowance. Rejected requests do not consume other budgets. Provider failures still consume an allowance; SDK transient retries can mean multiple upstream attempts per admitted search, so this is **not a dollar spending cap**.
+All budgets are **per warm server process**, not shared across Vercel's fleet. Windows begin on first admitted use, not at midnight. Minute and daily budgets are checked synchronously before incrementing; rejected searches do not consume other budgets. Provider failures still consume an allowance, and SDK retries can mean multiple upstream attempts per search.
 
-Only Vercel's `x-vercel-forwarded-for` identity is trusted on Vercel. Raw IPs are not stored: identifiers are HMAC-hashed using the server-only Redis token. Token rotation resets IP identities; network changes/rotating IPs can bypass individual quotas. Users sharing Wi-Fi may share a quota. Other hosting requires a separately reviewed trusted-proxy/IP integration.
+Only Vercel's `x-vercel-forwarded-for` identity is trusted on Vercel. Raw IPs are not stored: identifiers are HMAC-hashed using a random process-local secret. Requests without a trusted valid IP share an anonymous bucket; outside Vercel, forwarded headers are ignored. Users sharing Wi-Fi may share a quota.
 
-Paid production searches **fail closed with 503** if the shared store, identity or configuration is unavailable. They never silently fall back to per-instance memory. Local development and keyless offline demos can use an in-memory limiter; that fallback is not distributed protection. Local `next start` with a real TypeSafe key also fails closed because it is not behind the supported Vercel proxy; use `npm run dev` for local live-provider testing.
+Counters disappear on process restarts/cold starts, differ between instances, and can be evicted if the map exceeds its 10,000-entry budget. Rotating IPs can also bypass individual quotas. Therefore **20/minute, 200/day and 500 paid/day are best-effort thresholds, not guaranteed site-wide or spending caps**. The project owner explicitly accepted this trade-off to keep the demo simple. Provider-side credit/spend limits remain the financial backstop. Local `next start` with a TypeSafe key works without extra configuration.
 
 ## Responsive verification and CI
 
@@ -42,13 +39,13 @@ Playwright runs against `next start` on port 3100 with credentials cleared. Sear
 
 GitHub `Quality checks` runs unit tests, TypeScript, dependency audit, a production build and browser tests. The HTML report includes result screenshots; failures retain screenshots/traces. **Screenshots are review artifacts, not pixel-baseline regression comparisons.** Review them before merging. Weekly Dependabot PRs cover npm and GitHub Actions.
 
-Repository administrators must separately enable branch protection/rulesets requiring the `quality` check before merging main. A workflow file alone does not block merges or Vercel deploys. Do not merge this branch until shared-limiter variables are set. Test a real Android phone and iPhone/Safari on the preview: emulation cannot fully reproduce mobile keyboards, browser chrome, OS text scaling or touch scrolling.
+Repository administrators must separately enable branch protection/rulesets requiring the `quality` check before merging main. A workflow file alone does not block merges or Vercel deploys. Test a real Android phone and iPhone/Safari on the preview: emulation cannot fully reproduce mobile keyboards, browser chrome, OS text scaling or touch scrolling.
 
 ## Remaining production work
 
-- Enable/review Vercel firewall and bot protection for `/api/search`, blocking abuse before it incurs function/Redis work. App-layer limits are not DDoS protection, authentication or a complete bot defense. Cross-site origin checks do not prevent direct scripts/curl.
-- Set provider-side spend controls/billing alerts and monitor 429/503/502 rates, latency and Redis availability. Decide whether to add CAPTCHA/challenges after observed abuse.
+- Consider Vercel firewall and bot protection for `/api/search` if abuse appears. App-layer limits are not DDoS protection, authentication or a complete bot defense. Cross-site origin checks do not prevent direct scripts/curl.
+- Set provider-side spend controls/billing alerts and monitor 429/503/502 rates and latency. Decide whether to add shared quotas or challenges after observed abuse.
 - Review previews so untrusted contributors cannot access production secrets. Avoid testing CI with real TypeSafe credentials.
-- Keep dependencies patched and review audit alerts; an empty advisory report does not prove absence of vulnerabilities. Strict CSP, broader accessibility/manual device testing and shared-store integration testing remain separate follow-ups.
+- Keep dependencies patched and review audit alerts; an empty advisory report does not prove absence of vulnerabilities. Strict CSP and broader accessibility/manual device testing remain separate follow-ups.
 
-References: [Vercel request headers](https://vercel.com/docs/headers/request-headers), [Upstash REST API](https://upstash.com/docs/redis/features/restapi).
+Reference: [Vercel request headers](https://vercel.com/docs/headers/request-headers).
