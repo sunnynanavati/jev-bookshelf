@@ -32,7 +32,7 @@ test("showcase placeholder cycles, pauses for editing, and respects reduced moti
         animation.pause();
         animation.currentTime = time;
       }));
-    }, index * 1800 + 500);
+    }, index * 2300 + 1900);
     await expect(prompts.nth(index)).toHaveCSS("opacity", "1");
     for (let other = 0; other < 4; other++) {
       if (other !== index) await expect(prompts.nth(other)).toHaveCSS("opacity", "0");

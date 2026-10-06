@@ -257,7 +257,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
                       <span
                         className="showcase-placeholder-text"
                         key={suggestion}
-                        style={{ animationDelay: `${index === 0 ? 0 : (index - showcaseQueries.length) * 1.8}s` }}
+                        style={{ animationDelay: `${index === 0 ? 0 : (index - showcaseQueries.length) * 2.3}s` }}
                       >
                         {suggestion}
                       </span>
