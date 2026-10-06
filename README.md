@@ -99,3 +99,11 @@ See [production safeguards](docs/production-safeguards.md) for responsive CI cov
 Completed features and fixes are verified, saved in small local Git commits, and pushed to the configured GitHub remote. Commit messages use Conventional Commits such as `feat:`, `fix:`, and `docs:`. Larger changes use short-lived `codex/` branches for review.
 
 Credentials remain local in `.env.local`; dependencies, build output, API caches, and TypeScript build-info files are ignored. Repository instructions in `AGENTS.md` preserve this workflow for future development sessions.
+
+## License and security
+
+Project code is available under the [MIT License](LICENSE). Third-party dependencies,
+Open Library metadata, and remote book-cover artwork retain their respective rights
+and terms; the project license does not grant rights to that third-party material.
+
+Please report vulnerabilities privately using the process in [SECURITY.md](SECURITY.md).
