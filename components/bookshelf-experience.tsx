@@ -7,6 +7,7 @@ import type { Book } from "@/lib/types";
 import { preloadBookCovers } from "@/lib/covers";
 import { BookCover } from "@/components/book-cover";
 import { ShelfRow } from "@/components/shelf-row";
+import { showcaseQueries } from "@/data/showcase-queries";
 
 type ExperienceState = "idle" | "searching" | "extracting" | "settled" | "unsupported" | "error";
 
@@ -236,19 +237,34 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
               >
                 <MagnifyingGlass size={24} weight="regular" />
               </span>
-              <input
-                id="book-search"
-                value={query}
-                onFocus={() => setSearchExpanded(true)}
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setSearchExpanded(true);
-                }}
-                placeholder="Ask your bookshelf"
-                autoComplete="off"
-                spellCheck="false"
-                maxLength={500}
-              />
+              <div className="search-input-slot">
+                <input
+                  id="book-search"
+                  value={query}
+                  onFocus={() => setSearchExpanded(true)}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setSearchExpanded(true);
+                  }}
+                  placeholder=""
+                  autoComplete="off"
+                  spellCheck="false"
+                  maxLength={500}
+                />
+                {!query && (
+                  <span className="showcase-placeholder" aria-hidden="true">
+                    {showcaseQueries.map((suggestion, index) => (
+                      <span
+                        className="showcase-placeholder-text"
+                        key={suggestion}
+                        style={{ animationDelay: `${index === 0 ? 0 : (index - showcaseQueries.length) * 1.8}s` }}
+                      >
+                        {suggestion}
+                      </span>
+                    ))}
+                  </span>
+                )}
+              </div>
               <button
                 type={showClear ? "button" : "submit"}
                 aria-label={showClear ? "Clear search and results" : "Search books"}

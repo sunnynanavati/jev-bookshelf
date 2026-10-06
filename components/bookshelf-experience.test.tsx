@@ -13,6 +13,19 @@ vi.mock("@/lib/covers", async (importOriginal) => {
 });
 
 describe("BookshelfExperience", () => {
+  it("shows four decorative showcase prompts without inserting them into the query", () => {
+    const { container } = render(<BookshelfExperience shelfRows={emptyShelves} />);
+    const input = screen.getByLabelText("Ask your bookshelf");
+    expect(container.querySelectorAll(".showcase-placeholder-text")).toHaveLength(4);
+    expect(container.querySelector(".showcase-placeholder")).toHaveAttribute("aria-hidden", "true");
+    expect(input).toHaveValue("");
+    fireEvent.change(input, { target: { value: "my own query" } });
+    expect(container.querySelector(".showcase-placeholder")).not.toBeInTheDocument();
+    expect(input).toHaveValue("my own query");
+    fireEvent.change(input, { target: { value: "" } });
+    expect(container.querySelectorAll(".showcase-placeholder-text")).toHaveLength(4);
+  });
+
   afterEach(() => {
     cleanup();
     window.localStorage.clear();

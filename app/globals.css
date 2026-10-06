@@ -411,6 +411,51 @@ button {
   to { transform: rotate(360deg) translateX(2px) rotate(-360deg); }
 }
 
+.search-input-slot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-input-slot input {
+  width: 100%;
+}
+
+.showcase-placeholder {
+  position: absolute;
+  inset: 0 12px;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  perspective: 600px;
+  pointer-events: none;
+  color: var(--ui-supporting, #93989b);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.showcase-placeholder-text {
+  grid-area: 1 / 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  backface-visibility: hidden;
+  animation: showcase-flip 7.2s var(--ease-out) infinite;
+}
+
+.search-form:focus-within .showcase-placeholder-text {
+  animation-play-state: paused;
+}
+
+/* Each suggestion rests for 1.5s, then flips over 300ms. */
+@keyframes showcase-flip {
+  0%, 20.833333%, 100% { opacity: 1; transform: translateY(0) rotateX(0deg); }
+  25%, 50% { opacity: 0; transform: translateY(-50%) rotateX(-90deg); }
+  50.001%, 95.833333% { opacity: 0; transform: translateY(50%) rotateX(90deg); }
+}
+
 .search-form input {
   width: 100%;
   height: 44px;
@@ -884,6 +929,15 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .showcase-placeholder-text {
+    animation-name: showcase-fade;
+    animation-duration: 7.2s !important;
+    animation-iteration-count: infinite !important;
+  }
+  @keyframes showcase-fade {
+    0%, 20.833333%, 100% { opacity: 1; }
+    25%, 95.833333% { opacity: 0; }
+  }
   *,
   *::before,
   *::after {

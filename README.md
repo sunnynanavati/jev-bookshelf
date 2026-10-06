@@ -44,6 +44,8 @@ Open [http://localhost:3000/catalog](http://localhost:3000/catalog) to inspect t
 
 ## UI comparison
 
+The empty search field cycles through four showcase prompts from `data/showcase-queries.ts`, resting for 1.5 seconds before a 300ms flip. Suggestions are decorative placeholders, never submitted as input. Focusing the field pauses the cycle; typing hides it. Reduced-motion settings replace the flip with a fade.
+
 The UI Agentic polish pass is now the homepage design. [http://localhost:3000/ui-agentic](http://localhost:3000/ui-agentic) remains available and uses the same shared theme, real search, catalog, shelf samples, and interactions; it does not use separate sample data or a different search service.
 
 The shared CSS Module in `components/bookshelf-theme.module.css` uses native system typography, regular-weight search text, readable 12px captions, restrained book shadows, and neutral focus indicators with no blue ring. Both bookshelf routes use it; the catalog retains its own styling. `/ui-agentic` is unlinked from the homepage and marked `noindex`, but it is a public route, not a private or authenticated page.

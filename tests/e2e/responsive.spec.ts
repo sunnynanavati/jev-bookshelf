@@ -22,6 +22,34 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/api/search", (route) => route.fulfill({ json: { mode: "jev", results: books.map((book) => ({ book, probability: .9 })) } }));
 });
 
+test("showcase placeholder cycles, pauses for editing, and respects reduced motion", async ({ page }) => {
+  await page.goto("/");
+  const prompts = page.locator(".showcase-placeholder-text");
+  await expect(prompts).toHaveCount(4);
+  for (let index = 0; index < 4; index++) {
+    await prompts.evaluateAll((elements, time) => {
+      elements.forEach((element) => element.getAnimations().forEach((animation) => {
+        animation.pause();
+        animation.currentTime = time;
+      }));
+    }, index * 1800 + 500);
+    await expect(prompts.nth(index)).toHaveCSS("opacity", "1");
+    for (let other = 0; other < 4; other++) {
+      if (other !== index) await expect(prompts.nth(other)).toHaveCSS("opacity", "0");
+    }
+  }
+  const input = page.getByRole("textbox");
+  await input.focus();
+  await expect(prompts.first()).toHaveCSS("animation-play-state", "paused");
+  await input.fill("my own query");
+  await expect(page.locator(".showcase-placeholder")).toHaveCount(0);
+  await expect(input).toHaveValue("my own query");
+  await input.fill("");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(prompts.first()).toHaveCSS("animation-name", "showcase-fade");
+  await expect(prompts.first()).toHaveCSS("transform", "none");
+});
+
 for (const [width, height] of sizes) {
   test(`search, refine, metadata, clear at ${width}x${height}`, async ({ page }, info) => {
     await page.setViewportSize({ width, height });
