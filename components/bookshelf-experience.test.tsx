@@ -70,7 +70,7 @@ describe("BookshelfExperience", () => {
     await user.type(screen.getByLabelText("Ask your bookshelf"), "Dystopian surveillance");
     await user.click(screen.getByRole("button", { name: "Search books" }));
     await screen.findByRole("heading", { name: "Nineteen Eighty-Four" });
-    expect(blur()).toBe("2.25px");
+    expect(blur()).toBe("3px");
     await user.click(screen.getByRole("button", { name: "Clear search and results" }));
     expect(blur()).toBe("0px");
   });
@@ -119,7 +119,7 @@ describe("BookshelfExperience", () => {
     expect(searchCluster).not.toHaveClass("is-compact");
     fireEvent.blur(input);
     expect(searchCluster).toHaveClass("is-compact");
-    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("2.25px");
+    expect(container.querySelector("main")?.style.getPropertyValue("--shelf-blur")).toBe("3px");
     expect(blurSlider).toBeDisabled();
     const clearButton = screen.getByRole("button", {
       name: "Clear search and results",

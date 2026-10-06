@@ -38,7 +38,7 @@ TYPESAFE_API_KEY=your_key_here
 
 The key is read only by the `/api/search` server route and is never bundled into the browser.
 
-During `npm run dev`, press **Ctrl + Shift + B** to show or hide the blur slider (hidden by default). Its saved browser preference applies only in development. Production builds do not render the controls or register the shortcut. The idle background defaults to 0px blur and smoothly transitions to 2.25px while results are displayed; clearing results restores the idle blur.
+During `npm run dev`, press **Ctrl + Shift + B** to show or hide the blur slider (hidden by default). Its saved browser preference applies only in development. Production builds do not render the controls or register the shortcut. The idle background defaults to 0px blur and smoothly transitions to 3px while results are displayed; clearing results restores the idle blur.
 
 Open [http://localhost:3000/catalog](http://localhost:3000/catalog) to inspect the catalog and its Open Library records.
 

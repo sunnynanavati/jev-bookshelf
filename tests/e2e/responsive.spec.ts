@@ -47,7 +47,7 @@ for (const [width, height] of sizes) {
     await input.press("Enter");
     await expect(page.locator(".state-settled")).toBeVisible();
     await expect(page.locator(".book-result")).toHaveCount(5);
-    await expect(page.locator(".shelves")).toHaveCSS("filter", "blur(2.25px)");
+    await expect(page.locator(".shelves")).toHaveCSS("filter", "blur(3px)");
     await page.locator(".book-result").first().focus();
     const metadata = page.locator(".book-result-metadata").first();
     await expect(metadata).toHaveCSS("opacity", "1");

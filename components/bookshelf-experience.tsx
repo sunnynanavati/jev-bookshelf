@@ -159,7 +159,7 @@ export function BookshelfExperience({ shelfRows }: BookshelfExperienceProps) {
   };
 
   const hasResults = results.length > 0;
-  const effectiveBlur = hasResults ? 2.25 : shelfBlur;
+  const effectiveBlur = hasResults ? 3 : shelfBlur;
   const activeIndex = results.findIndex((book) => book.id === (hoveredBook ?? focusedBook));
   const showClear = resultLayout || hasResults;
 
