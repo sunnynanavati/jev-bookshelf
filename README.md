@@ -6,7 +6,7 @@ The interface presents a moving wall of book spines. Natural-language searches s
 
 ## Demo
 
-[Try the live bookshelf](https://jev-bookshelf.vercel.app/).
+[Try the live bookshelf](https://jevreads.vercel.com/).
 
 The homepage pairs moving book spines with cycling search suggestions.
 
