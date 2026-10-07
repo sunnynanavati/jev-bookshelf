@@ -4,6 +4,18 @@ A visual semantic book-search experiment powered by TypeSafe AI's Jev.
 
 The interface presents a moving wall of book spines. Natural-language searches shortlist relevant books locally, ask Jev to rank them, and pull the five strongest matches into cover view.
 
+## Demo
+
+[Try the live bookshelf](https://jev-bookshelf.vercel.app/).
+
+The homepage pairs moving book spines with cycling search suggestions.
+
+![Jev Bookshelf homepage with two moving shelf rows and a centered search field](docs/screenshots/homepage.jpg)
+
+Search results bring matching covers forward while the background shelves blur. This example searches for psychological novels with unreliable narrators.
+
+![Five book covers returned for psychological novels with unreliable narrators](docs/screenshots/search-results.jpg)
+
 ## What is included
 
 - An exactly 1,000-book English-language catalog: 500 fiction and 500 nonfiction
